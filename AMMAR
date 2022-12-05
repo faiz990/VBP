@@ -1,0 +1,201 @@
+Imports System.Data.OleDb
+
+'declaration for database
+
+Public Class database
+    Dim inc As Integer
+    Dim MaxRows As Integer
+    Dim con As New OleDb.OleDbConnection
+    Dim dbprovider As String
+    Dim dbsource As String
+    Dim ds As New DataSet
+    Dim da As OleDb.OleDbDataAdapter
+    Dim sql As String
+
+    Private Sub database_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+
+        'connection to database
+
+        dbprovider = "Provider=Microsoft.Jet.OLEDB.4.0;"
+        dbsource = "Data Source = D:\KERJA VBP\Bookstore application arif\Bookstore application arif\bookstore.mdb"
+        con.ConnectionString = dbprovider & dbsource
+        con.Open()
+
+        sql = "SELECT * FROM bookstore"
+        da = New OleDb.OleDbDataAdapter(sql, con)
+        da.Fill(ds, "bookstore")
+
+        con.Close()
+        MaxRows = ds.Tables("bookstore").Rows.Count
+        inc = -1
+    End Sub
+
+    Private Sub btnAdd_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnAdd.Click
+
+        'clear old detail when user click button add 
+
+        txtcode.Clear()
+        txttitle.Clear()
+        txtauthor.Clear()
+        txtdate.Clear()
+        txtprice.Clear()
+        inc = 0
+    End Sub
+
+    Private Sub btnSave_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnSave.Click
+
+        'save detail in database
+
+        If inc <> -1 Then
+            Dim cb As New OleDb.OleDbCommandBuilder(da)
+            Dim dsNewRow As DataRow
+
+            dsNewRow = ds.Tables("bookstore").NewRow()
+            dsNewRow.Item("bookcode") = txtcode.Text
+            dsNewRow.Item("booktitle") = txttitle.Text
+            dsNewRow.Item("author") = txtauthor.Text
+            dsNewRow.Item("dategenerated") = txtdate.Text
+            dsNewRow.Item("price") = txtprice.Text
+
+            ds.Tables("bookstore").Rows.Add(dsNewRow)
+            da.Update(ds, "bookstore")
+            MsgBox("Data Added")
+
+            'clear detail when click button save
+
+            txtcode.Clear()
+            txttitle.Clear()
+            txtauthor.Clear()
+            txtdate.Clear()
+            txtprice.Clear()
+        End If
+    End Sub
+
+    Private Sub btnUpdate_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnUpdate.Click
+
+        'update new detail when wanting to replace detail
+
+        Dim cb As New OleDb.OleDbCommandBuilder(da)
+
+        ds.Tables("bookstore").Rows(inc).Item(0) = txtcode.Text
+        ds.Tables("bookstore").Rows(inc).Item(1) = txttitle.Text
+        ds.Tables("bookstore").Rows(inc).Item(2) = txtauthor.Text
+        ds.Tables("bookstore").Rows(inc).Item(3) = txtdate.Text
+        ds.Tables("bookstore").Rows(inc).Item(4) = txtprice.Text
+
+        da.Update(ds, "bookstore")
+        MsgBox("Updated")
+    End Sub
+
+    Private Sub btnDelete_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnDelete.Click
+        Dim cb As New OleDb.OleDbCommandBuilder(da)
+
+        'delete detail in database when click button delete
+
+        If MessageBox.Show("Delete?", "Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) = Windows.Forms.DialogResult.Yes Then
+            ds.Tables("bookstore").Rows(inc).Delete()
+            MaxRows = MaxRows - 1
+            da.Update(ds, "bookstore")
+            txtcode.Clear()
+            txttitle.Clear()
+            txtauthor.Clear()
+            txtdate.Clear()
+            txtprice.Clear()
+        Else
+            MsgBox("Operation Cancelled")
+        End If
+    End Sub
+
+    Private Sub btnSearch_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnSearch.Click
+        search.Show()
+        Me.Hide()
+    End Sub
+
+    ''UNTUK FORM SEARCH
+    Public Class search
+        Dim inc As Integer
+        Dim MaxRows As Integer
+        Dim con As New OleDb.OleDbConnection
+        Dim dbprovider As String
+        Dim dbsource As String
+        Dim ds As New DataSet
+        Dim da As OleDb.OleDbDataAdapter
+        Dim sql As String
+        Private Sub database_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+
+            'connection to database
+
+            dbprovider = "Provider=Microsoft.Jet.OLEDB.4.0;"
+            dbsource = "Data Source = D:\KERJA VBP\Bookstore application arif\Bookstore application arif\bookstore.mdb"
+            con.ConnectionString = dbprovider & dbsource
+            con.Open()
+
+            sql = "SELECT * FROM bookstore"
+            da = New OleDb.OleDbDataAdapter(sql, con)
+            da.Fill(ds, "bookstore")
+
+            con.Close()
+            MaxRows = ds.Tables("bookstore").Rows.Count
+            inc = -1
+        End Sub
+        Private Sub navigaterecords()
+
+            'navigate a database
+
+            txtcode.Text = ds.Tables("bookstore").Rows(inc).Item(0)
+            txttitle.Text = ds.Tables("bookstore").Rows(inc).Item(1)
+            txtauthor.Text = ds.Tables("bookstore").Rows(inc).Item(2)
+            txtdate.Text = ds.Tables("bookstore").Rows(inc).Item(3)
+            txtprice.Text = ds.Tables("bookstore").Rows(inc).Item(4)
+        End Sub
+        Private Sub btnFirst_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnFirst.Click
+
+            'to view first detail in database
+
+            If inc <> 0 Then
+                inc = 0
+                navigaterecords()
+            Else
+                MsgBox("This is first record")
+            End If
+        End Sub
+        Private Sub btnPrevious_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnPrevious.Click
+
+            'to view previous detail 
+
+            If inc > 0 Then
+                inc = inc - 1
+                navigaterecords()
+            ElseIf inc = -1 Then
+                MsgBox("No Records")
+            ElseIf inc = 0 Then
+                MsgBox("First Row")
+            End If
+        End Sub
+
+        Private Sub btnNext_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnNext.Click
+
+            'to view next detail 
+
+            If inc <> MaxRows - 1 Then
+                inc = inc + 1
+                navigaterecords()
+            Else
+                MsgBox("No More Record")
+            End If
+        End Sub
+        Private Sub btnLast_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnLast.Click
+
+            'to view last detail in database
+
+            If inc <> MaxRows - 1 Then
+                inc = MaxRows - 1
+                navigaterecords()
+            Else
+                MsgBox("This is last record")
+            End If
+        End Sub
+    End Class
+   
+
+End Class
