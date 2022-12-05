@@ -1,0 +1,201 @@
+'create validation control in login system
+
+        If String.IsNullOrEmpty(txtUsername.Text.Trim) Then
+            ErrorProvider1.SetError(txtUsername, "Please enter your username")
+            txtUsername.Focus()
+        Else
+            ErrorProvider1.SetError(txtUsername, String.Empty)
+        End If
+
+        If String.IsNullOrEmpty(txtPass.Text.Trim) Then
+            ErrorProvider2.SetError(txtPass, "Please enter your password")
+            txtPass.Focus()
+        Else
+            ErrorProvider2.SetError(txtPass, String.Empty)
+        End If
+        database.Show()
+        Me.Hide()
+    End Sub
+
+
+
+
+If IsNumeric(txtbookid.Text) Then
+            ErrorProvider1.SetError(txtbookid, "")
+        Else
+            ErrorProvider1.SetError(txtbookid, "No shj")
+        End If
+        If txtbookid.Text = "" Then
+            ErrorProvider1.SetError(txtbookid, "Isi")
+        End If
+        If txtbt.Text = "" Then
+            ErrorProvider2.SetError(txtbt, "isi")
+        End If
+        If txtba.Text = "" Then
+            ErrorProvider3.SetError(txtba, "isi")
+        End If
+        If txtbp.Text = "" Then
+            ErrorProvider4.SetError(txtbp, "isi")
+        End If
+
+
+
+
+Imports System.Data.OleDb
+Public Class database
+
+    'declaration for database 
+
+    Dim inc As Integer
+    Dim MaxRows As Integer
+    Dim con As New OleDb.OleDbConnection
+    Dim dbprovider As String
+    Dim dbsource As String
+    Dim ds As New DataSet
+    Dim da As OleDb.OleDbDataAdapter
+    Dim sql As String
+
+    Private Sub database_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+        dbprovider = "Provider=Microsoft.Jet.OLEDB.4.0;"
+        dbsource = "Data Source = C:\Users\HP\Desktop\Visual\bookstore\bookstorecust.mdb"
+        con.ConnectionString = dbprovider & dbsource
+        con.Open()
+
+        sql = "SELECT * FROM bookstorecust"
+        da = New OleDb.OleDbDataAdapter(sql, con)
+        da.Fill(ds, "bookstorecust")
+
+        con.Close()
+        MaxRows = ds.Tables("bookstorecust").Rows.Count
+        inc = -1
+    End Sub
+
+    Private Sub btnAdd_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnAdd.Click
+        txtbookid.Clear()
+        txtbooktitle.Clear()
+        txtbookauthor.Clear()
+        txtbookprice.Clear()
+        txtbookid.Focus()
+        inc = 0
+    End Sub
+
+    Private Sub btnSave_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnSave.Click
+        If txtbookid.Text <> "" And IsNumeric(txtbookid.Text) And txtbooktitle.Text <> "" And txtbookauthor.Text <> "" And txtbookprice.Text <> "" Then
+            If inc <> -1 Then
+                Dim cb As New OleDb.OleDbCommandBuilder(da)
+                Dim dsnewrow As DataRow
+
+                dsnewrow = ds.Tables("bookstorecust").NewRow()
+                dsnewrow.Item("bookid") = txtbookid.Text
+                dsnewrow.Item("booktitle") = txtbooktitle.Text
+                dsnewrow.Item("bookauthor") = txtbookauthor.Text
+                dsnewrow.Item("bookprice") = txtbookprice.Text
+
+                ds.Tables("bookstorecust").Rows.Add(dsnewrow)
+                da.Update(ds, "bookstorecust")
+                MsgBox("data added")
+
+                txtbookid.Clear()
+                txtbooktitle.Clear()
+                txtbookauthor.Clear()
+                txtbookprice.Clear()
+            End If
+        Else
+            MsgBox("Failed")
+        End If
+    End Sub
+
+    Private Sub btnUpdate_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnUpdate.Click
+        Dim cb As New OleDb.OleDbCommandBuilder(da)
+
+        ds.Tables("bookstorecust").Rows(inc).Item(0) = txtbookid.Text
+        ds.Tables("bookstorecust").Rows(inc).Item(1) = txtbookauthor.Text
+        ds.Tables("bookstorecust").Rows(inc).Item(2) = txtbookauthor.Text
+        ds.Tables("bookstorecust").Rows(inc).Item(3) = txtbookprice.Text
+
+        da.Update(ds, "bookstorecust")
+        MsgBox("Updated")
+    End Sub
+
+    Private Sub btnDelete_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnDelete.Click
+        Dim cb As New OleDb.OleDbCommandBuilder(da)
+
+        If MessageBox.Show("Delete?", "Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) = Windows.Forms.DialogResult.Yes Then
+            ds.Tables("bookstorecust").Rows(inc).Delete()
+            MaxRows = MaxRows - 1
+            da.Update(ds, "bookstorecust")
+            txtbookid.Clear()
+            txtbooktitle.Clear()
+            txtbookauthor.Clear()
+            txtbookprice.Clear()
+        Else
+            MsgBox("Operation Cancelled")
+        End If
+    End Sub
+
+    Private Sub btnFirst_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnFirst.Click
+        'to view first detail in database
+
+        If inc <> 0 Then
+            inc = 0
+            navigaterecords()
+        Else
+            MsgBox("This is first record")
+        End If
+    End Sub
+
+    Private Sub btnPrevious_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnPrevious.Click
+        'to view previous detail 
+
+        If inc > 0 Then
+            inc = inc - 1
+            navigaterecords()
+        ElseIf inc = -1 Then
+            MsgBox("No Records")
+        ElseIf inc = 0 Then
+            MsgBox("First Row")
+        End If
+
+    End Sub
+
+    Private Sub btnNext_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnNext.Click
+        'to view next detail 
+
+        If inc <> MaxRows - 1 Then
+            inc = inc + 1
+            navigaterecords()
+        Else
+            MsgBox("No More Record")
+        End If
+    End Sub
+
+    Private Sub btnLast_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnLast.Click
+        'to view last detail in database
+
+        If inc <> MaxRows - 1 Then
+            inc = MaxRows - 1
+            navigaterecords()
+        Else
+            MsgBox("This is last record")
+        End If
+    End Sub
+
+
+
+Private Sub btnCancel_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnCancel.Click
+        btnCommit.Enabled = False
+
+        btnAdd.Enabled = True
+        btnUpdate.Enabled = True
+        btnDelete.Enabled = True
+
+        txtfullname.Clear()
+        txtmatricnum.Clear()
+        txtphonenum.Clear()
+        txtdepartment.Clear()
+        txtemail.Clear()
+
+    End Sub
+End Class
+
+
