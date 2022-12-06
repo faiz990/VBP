@@ -197,5 +197,20 @@ Public Class database
         End Sub
     End Class
    
+   ''BUTTON VALIDATION LOGIN
+     Private Sub Button1_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Button1.Click
+        Dim username As String
+        Dim password As String
+
+        username = txtusername.Text
+        password = txtpass.Text
+        If (username.Equals("admin") And password.Equals("1234")) Then
+            MessageBox.Show("login Success", "information", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+            Me.Hide()
+        Else
+            MessageBox.Show("Please Enter Check Again", "Wrong Username/Password", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End If
+    End Sub
 
 End Class
